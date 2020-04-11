@@ -1,8 +1,7 @@
 import abc
-
 class MDP_class(object):
     __metaclass__ = abc.ABCMeta
-    
+
     @abc.abstractmethod
     def getNumStates(self):
         return
@@ -23,6 +22,8 @@ class MDP_class(object):
     def nextStateProb(self,s,a):
         return
     
-    @abc.abstractmethod
-    def sampleNextState(self,s,a):
-        return
+
+
+
+
+

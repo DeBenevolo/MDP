@@ -4,12 +4,12 @@ from copy import copy, deepcopy
 from scipy.sparse import csr_matrix
 import scipy.linalg
 
-def VI_CVaR(MDP,Y_set_all,index_opt,index_fast,tol,maxIter,V0,dis):
+def VI_CVaR(MDP,Y_set_all,index_fast,tol,maxIter,V0,dis):
     #Interpolation based CVaR VI
     #Instead of solving many small problem, solve a concatenated linear problem
     #for all actions and confidence parameters at each iteration
     Ns = MDP.getNumStates();
-    Ny = np.size(Y_set_all, axis=1);
+    Ny = np.size(Y_set_all);
     Na = MDP.getNumActions();
 
     V = V0;
@@ -34,7 +34,7 @@ def VI_CVaR(MDP,Y_set_all,index_opt,index_fast,tol,maxIter,V0,dis):
         for s in range(Ns):
             #I get rid of this line for better speed performance
             #disp(['iteration at state: ' num2str(Ns-s)]);
-            y_set = Y_set_all[s,:] #the discretization of y for each state
+            y_set = Y_set_all #the discretization of y for each state
             a = MDP.getActions(s)
             objective_fn = np.zeros((np.size(a), np.size(y_set)))
             for a_ind in range(np.size(a)):
@@ -120,24 +120,74 @@ def VI_CVaR(MDP,Y_set_all,index_opt,index_fast,tol,maxIter,V0,dis):
                         ub_cell[a_ind,y_ind-1] = ub_LP(y_set[y_ind]);
                         xi_t0_cell[a_ind,y_ind-1] = xi_t0;
 
-            f_full = f_cell[:];
-            B_full = B_cell[:];
-            Beq_full = Beq_cell[:];
-            lb_full = lb_cell[:];
-            ub_full = ub_cell[:];
-            xi_t0_full = xi_t0_cell[:];
-            A_concat = A_cell[:];
-            A_full = csr_matrix((0,0));
-            print A_full
-            print np.shape(A_concat[0,0])
-            print A_concat[0,0]
-            for nn in range(np.size(A_concat)):
-                A_full = scipy.linalg.block_diag(A_full,A_concat[:,nn]);
-            
-            Aeq_concat = Aeq_cell[:];
-            Aeq_full = csr_matrix((0,0));
-            for nn in range(np.size(Aeq_concat)):
-                Aeq_full = scipy.linalg.block_diag(Aeq_full,Aeq_concat[nn])
+            #cell2mat f_full
+            f_full = f_cell[0,0]
+            x_x, y_y = np.shape(f_cell)
+            for _x in range(x_x):
+                for _y in range(y_y):
+                    if _x != 0 or _y != 0:
+                        f_full = np.concatenate((f_full, f_cell[_x,_y]),axis=0)
+
+
+            #cell2mat B_full
+            B_full = B_cell[0,0]
+            x_x, y_y = np.shape(B_cell)
+            for _x in range(x_x):
+                for _y in range(y_y):
+                    if _x != 0 or _y != 0:
+                        B_full = np.concatenate((B_full, B_cell[_x,_y]), axis=0)
+
+
+            #cell2mat lb_cell
+            lb_full = lb_cell[0,0];
+            x_x, y_y = np.shape(lb_cell)
+            for _x in range(x_x):
+                for _y in range(y_y):
+                    if _x != 0 or _y != 0:
+                        lb_full = np.concatenate((lb_full, lb_cell[_x,_y]), axis=0)
+
+            #cell2mat ub_cell
+            ub_full = ub_cell[0,0];
+            x_x, y_y = np.shape(ub_cell)
+            for _x in range(x_x):
+                for _y in range(y_y):
+                    if _x != 0 or _y != 0:
+                        ub_full = np.concatenate((ub_full, ub_cell[_x,_y]), axis=0)
+
+            #cell2mat xi_t0_cell
+            xi_t0_full = xi_t0_cell[0,0];
+            x_x, y_y = np.shape(xi_t0_cell)
+            for _x in range(x_x):
+                for _y in range(y_y):
+                    if _x != 0 or _y != 0:
+                        xi_t0_full = np.concatenate((xi_t0_full, xi_t0_cell[_x,_y]), axis=0)
+
+            #cell2mat A_cell
+            print A_cell
+            A_concat = A_cell[0,0];
+            x_x, y_y = np.shape(A_cell)
+            for _x in range(x_x):
+                for _y in range(y_y):
+                    if _x != 0 or _y != 0:
+                        A_concat = scipy.linalg.block_diag(A_concat, A_cell[_x,_y])
+
+            A_full = A_concat[0,0];
+            x_x, y_y = np.shape(A_concat)
+            for _x in range(x_x):
+                for _y in range(y_y):
+                    if _x != 0 or _y != 0:
+                        print A_concat[_x,_y]
+                        A_full = np.concatenate((A_full, A_concat[_x,_y]), axis=0)          
+            #A_full = csr_matrix((0,0));
+      
+            print np.shape(A_full)
+            #for nn in range(np.size(A_concat)):
+            #    A_full = scipy.linalg.block_diag(A_full,A_concat[:,nn]);
+           # print np.shape(A_full)
+           # Aeq_concat = Aeq_cell[:];
+           # Aeq_full = csr_matrix((0,0));
+          #  for nn in range(np.size(Aeq_concat)):
+          #      Aeq_full = scipy.linalg.block_diag(Aeq_full,Aeq_concat[:,nn]);
             
 
     return 0, 0, 0

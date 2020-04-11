@@ -2,16 +2,6 @@ import numpy as np
 from copy import copy, deepcopy
 
 def VI_Exp(MDP,tol,maxIter,dis):
-	#value iteration algorithm
-	# *********** Inputs ******************
-		#MDP : MDP class object
-		#tol : optional error tolerance (default 1e-3)
-		#maxIter : maximum iterations (default 1e3);
-		#V0 : initial value function (default 0)
-	# *********** Outputs *****************
-		#V : optimal value function
-		#Pol : optimal (greedy) policy
-
 	#Initialize
 	Ns = MDP.getNumStates();
 	maxIter = int(maxIter)
@@ -28,6 +18,7 @@ def VI_Exp(MDP,tol,maxIter,dis):
         		Pol[s] = np.argmin(Q); #minimum element of each column  
 
     		err = np.max(np.absolute(V-V_prev))
+    		print err;
     		if err < tol:
     			print "Error threshold reached at iteration: ", err, i;
     			return V, Pol, err
